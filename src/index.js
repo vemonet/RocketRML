@@ -7,10 +7,43 @@ const objectHelper = require('./helper/objectHelper.js');
 const replaceHelper = require('./helper/replace.js');
 const prefixhelper = require('./helper/prefixHelper.js');
 const helper = require('./input-parser/helper.js');
+const n3 = require('n3');
+const yarrrml = require('@rmlio/yarrrml-parser/lib/rml-generator');
+
+const yarrrmlParse = (yaml) =>
+  new Promise((resolve) => {
+    // Convert YARRRML mappings to RML, cf. https://github.com/semantifyit/RocketRML/issues/20
+    const y2r = new yarrrml();
+    const yamlQuads = y2r.convert(yaml);
+    let prefixes = {
+      rr: 'http://www.w3.org/ns/r2rml#',
+      rml: 'http://semweb.mmlab.be/ns/rml#',
+      xsd: 'http://www.w3.org/2001/XMLSchema#',
+      schema: 'http://schema.org/',
+      rdf: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+      rdfs: 'http://www.w3.org/2000/01/rdf-schema#',
+      fnml: 'http://semweb.mmlab.be/ns/fnml#',
+      fno: 'http://w3id.org/function/ontology#',
+      grel: "http://users.ugent.be/~bjdmeest/function/grel.ttl#",
+    };
+    prefixes = { ...prefixes, ...y2r.getPrefixes() };
+    const writer = new n3.Writer({ prefixes });
+    writer.addQuads(yamlQuads);
+    writer.end((_, result) => {
+      resolve(result);
+    });
+  });
 
 const parseFile = async (pathInput, pathOutput, options = {}) => {
   cleanCache(options);
-  const contents = fs.readFileSync(pathInput, 'utf8');
+  let contents;
+  if (pathInput.endsWith('.yml') || pathInput.endsWith('.yaml')) {
+    helper.consoleLogIf('Converting YARRRML mappings to RML', options);
+    const yaml = fs.readFileSync(pathInput, 'utf8');
+    contents = await yarrrmlParse(yaml);
+  } else {
+    contents = fs.readFileSync(pathInput, 'utf8');
+  }
 
   const res = await mapfile.expandedJsonMap(contents, options);
   const output = await process(res, options);
