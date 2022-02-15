@@ -4,7 +4,12 @@ const helper = require('./helper.js');
 class CsvParser {
   constructor(inputPath, iterator, options) {
     this.iterator = iterator;
+    // TODO: for large CSV split the processing in multiple files
     const string = helper.readFileCSV(inputPath, options);
+
+    if (options.csvIndex) {
+      
+    }
 
     const o = {
       delimiter: ',',

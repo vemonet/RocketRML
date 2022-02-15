@@ -31,6 +31,15 @@ const parseFile = async (data, currObject, prefixes, source, iterator, options, 
       Parser = new JSONParser(source, iterator, options);
       break;
     case 'CSV':
+      // TODO: for large CSV split the processing in multiple files
+      if (source.mb_size > 100) {
+        options.csvIndex = 0
+        options.linesToProcess = 1000000
+        while (options.csvIndex < source.line_count) {
+          Parser = new CSVParser(source, iterator, options);
+          options.csvIndex = options.csvIndex + options.linesToProcess
+        }
+      }
       Parser = new CSVParser(source, iterator, options);
       break;
     default:
