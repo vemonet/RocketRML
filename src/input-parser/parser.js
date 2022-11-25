@@ -7,7 +7,7 @@ const functionHelper = require('../function/function');
 const XMLParser = require('./XMLParser');
 const JSONParser = require('./JSONParser');
 const CSVParser = require('./CSVParser');
-const XMLParserCPP = require('./XmlParserCpp');
+// const XMLParserCPP = require('./XmlParserCpp');
 const FontoxpathParser = require('./FontoxpathParser');
 
 const { getDataFromParser } = helper;
@@ -27,13 +27,14 @@ const parseFile = async (
   let Parser;
   switch (ql) {
     case 'XPath':
+      // if (
+      //   options &&
+      //   ((options.xmlPerformanceMode && options.xmlPerformanceMode === true) ||
+      //     (options.xpathLib && options.xpathLib === 'pugixml'))
+      // ) {
+      //   Parser = new XMLParserCPP(source, iterator, options);
+      // } else
       if (
-        options &&
-        ((options.xmlPerformanceMode && options.xmlPerformanceMode === true) ||
-          (options.xpathLib && options.xpathLib === 'pugixml'))
-      ) {
-        Parser = new XMLParserCPP(source, iterator, options);
-      } else if (
         options &&
         options.xpathLib &&
         options.xpathLib === 'fontoxpath'
